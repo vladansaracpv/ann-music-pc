@@ -155,12 +155,12 @@ export function pcset(src: PcSet): PcsetProps {
   const chroma: PcsetChroma = isSetChroma(src)
     ? src
     : isSetNum(src)
-      ? setNumToChroma(src)
-      : isArray(src)
-        ? listToSetChroma(src)
-        : isPcset(src)
-          ? src.chroma
-          : EmptySet.chroma;
+    ? setNumToChroma(src)
+    : isArray(src)
+    ? listToSetChroma(src)
+    : isPcset(src)
+    ? src.chroma
+    : EmptySet.chroma;
 
   return (cache[chroma] = cache[chroma] || chromaToSet(chroma));
 }
@@ -307,7 +307,6 @@ export const filterNotes = curry((set: PcSet, notes: NoteName[]) => {
  *                 INTERVAL - PC methods                   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-
 
 /**
  * Transpose a note by an interval. The note can be a pitch class.
