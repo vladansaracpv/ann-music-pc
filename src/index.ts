@@ -1,6 +1,6 @@
-import { BaseArray, BaseBoolean, BaseFunctional, BaseRelations, BaseTypings } from 'ann-music-base';
-import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-note';
 import { Interval, INTERVAL, IntervalName, IntervalProps } from 'ann-music-interval';
+import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-note';
+import { BaseArray, BaseBoolean, BaseFunctional, BaseRelations, BaseTypings } from 'ann-music-base';
 
 const { compact, range, rotate, toBinary } = BaseArray;
 const { both } = BaseBoolean;
