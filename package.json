@@ -43,8 +43,6 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
-    "ann-music-interval": "^1.0.1",
-    "ann-music-base": "^1.1.1",
-    "ann-music-note": "^1.0.6"
+    "ann-music-interval": "^1.0.1"
   }
 }
