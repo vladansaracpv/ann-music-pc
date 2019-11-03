@@ -137,7 +137,7 @@ function chromaToSet(chroma: PcsetChroma): PcsetProps {
  * @param {PcsetChroma} chroma
  * @return {Array<IntervalName>}
  */
-function chromaToIntervals(chroma: PcsetChroma): IntervalName[] {
+export function chromaToIntervals(chroma: PcsetChroma): IntervalName[] {
   const notNull = value => !isUndefinedOrNull(value);
   const toIvl = (val, i) => (val === '1' ? Interval(i).name : null);
   return chroma
@@ -155,12 +155,12 @@ export function pcset(src: PcSet): PcsetProps {
   const chroma: PcsetChroma = isSetChroma(src)
     ? src
     : isSetNum(src)
-    ? setNumToChroma(src)
-    : isArray(src)
-    ? listToSetChroma(src)
-    : isPcset(src)
-    ? src.chroma
-    : EmptySet.chroma;
+      ? setNumToChroma(src)
+      : isArray(src)
+        ? listToSetChroma(src)
+        : isPcset(src)
+          ? src.chroma
+          : EmptySet.chroma;
 
   return (cache[chroma] = cache[chroma] || chromaToSet(chroma));
 }
