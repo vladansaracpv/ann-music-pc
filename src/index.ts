@@ -155,12 +155,12 @@ export function pcset(src: PcSet): PcsetProps {
   const chroma: PcsetChroma = isSetChroma(src)
     ? src
     : isSetNum(src)
-      ? setNumToChroma(src)
-      : isArray(src)
-        ? listToSetChroma(src)
-        : isPcset(src)
-          ? src.chroma
-          : EmptySet.chroma;
+    ? setNumToChroma(src)
+    : isArray(src)
+    ? listToSetChroma(src)
+    : isPcset(src)
+    ? src.chroma
+    : EmptySet.chroma;
 
   return (cache[chroma] = cache[chroma] || chromaToSet(chroma));
 }
