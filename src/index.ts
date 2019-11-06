@@ -263,12 +263,12 @@ export function PC(src: PcSet) {
   const chroma: PcChroma = isPcChroma(src)
     ? src
     : isPcNum(src)
-      ? fromNum(src)
-      : isArray(src)
-        ? fromArray(src)
-        : isPcSet(src)
-          ? src.chroma
-          : PitchClass.Empty.chroma;
+    ? fromNum(src)
+    : isArray(src)
+    ? fromArray(src)
+    : isPcSet(src)
+    ? src.chroma
+    : PitchClass.Empty.chroma;
 
   const setNum: PcNum = toNum(chroma);
   const normalized = normalize(chroma);
