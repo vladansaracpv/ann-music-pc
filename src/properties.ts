@@ -11,8 +11,8 @@ const { CustomError } = BaseErrors;
 
 const PcError = CustomError('Interval');
 
-export function PC({ pcnum, chroma, intervals, notes }: PcInit = {}): PcProperties {
-  const { isPcChroma, isPcNum, isPcSet, isNoteArray, isIntervalArray } = Validators;
+export function PC({ pcnum, chroma, intervals, notes, note, interval }: PcInit = {}): PcProperties {
+  const { isPcChroma, isPcNum, isNoteArray, isIntervalArray, isNoteName, isIntervalName } = Validators;
   const { fromNum, fromNotes, fromIntervals, toNum, toIntervals } = Chroma;
   const { normalize } = Methods;
 
@@ -38,20 +38,22 @@ export function PC({ pcnum, chroma, intervals, notes }: PcInit = {}): PcProperti
     return PcBuild(chroma);
   }
 
-  function fromTwoNotes(notes: NoteName[]): PcProperties {
+  function fromNotesList(notes: NoteName[]): PcProperties {
     const chroma = fromNotes(notes);
     return PcBuild(chroma);
   }
 
-  function fromTwoIntervals(intervals: IntervalName[]): PcProperties {
+  function fromIntervalsList(intervals: IntervalName[]): PcProperties {
     const chroma = fromIntervals(intervals);
     return PcBuild(chroma);
   }
 
   if (isPcChroma(chroma)) return PcBuild(chroma);
   if (isPcNum(pcnum)) return fromPcNum(pcnum);
-  if (isNoteArray(notes)) return fromTwoNotes(notes);
-  if (isIntervalArray(intervals)) return fromTwoIntervals(intervals);
+  if (isNoteName(note)) return fromNotesList([note]);
+  if (isNoteArray(notes)) return fromNotesList(notes);
+  if (isIntervalName(interval)) return fromIntervalsList([interval]);
+  if (isIntervalArray(intervals)) return fromIntervalsList(intervals);
 
   return PcError('InvalidIvlConstructor', { pcnum, chroma, intervals, notes }, EmptyPc) as PcProperties;
 }

@@ -4,7 +4,7 @@ import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-not
 
 import { PC } from './properties';
 import { EmptyPc } from './theory';
-import { PcChroma, PcInit, PcNum, PcProperties } from './types';
+import { PcChroma, PcNum, PcProperties, PcSet, PcInit } from './types';
 
 const { compact, range, rotate, toBinary } = BaseArray;
 const { both } = BaseBoolean;
@@ -19,13 +19,13 @@ export const Validators = {
   isPcChroma: (set: any): set is PcChroma => /^[01]{12}$/.test(set),
   isPcSet: (set: any): set is PcProperties => isObject(set) && Validators.isPcChroma(set.chroma),
   isNoteArray: (notes: NoteName[]) => {
-    const [first, second] = notes;
-    return both(isNoteName(first), isNoteName(second));
+    return notes.reduce((acc, value) => acc && isNoteName(value), true);
   },
   isIntervalArray: (intervals: IntervalName[]) => {
-    const [first, second] = intervals;
-    return both(isIntervalName(first), isIntervalName(second));
+    return intervals.reduce((acc, value) => acc && isIntervalName(value), true);
   },
+  isNoteName,
+  isIntervalName,
 };
 
 export const Methods = {
@@ -169,7 +169,7 @@ export const Chroma = {
   toNum: (chroma: PcChroma): PcNum => parseInt(chroma, 2),
   toIntervals: (chroma: PcChroma): IntervalName[] => {
     const notNull = value => !isUndefinedOrNull(value);
-    const toIvl = (val, i) => (val === '1' ? Interval(i).name : null);
+    const toIvl = (val, i) => (val === '1' ? Interval({ width: i }).name : null);
     return chroma
       .split('')
       .map(toIvl)
@@ -200,7 +200,6 @@ export const Chroma = {
       return EmptyPc.chroma;
     }
 
-    const isNote = NOTE.Validators.isName;
     let pitch: NoNote | NoteProps | IntervalProps | null;
 
     const binary = Array(12).fill(0);
@@ -219,7 +218,6 @@ export const Chroma = {
       return EmptyPc.chroma;
     }
 
-    const isIvl = INTERVAL.Validators.isIntervalName;
     let pitch: NoNote | NoteProps | IntervalProps | null;
 
     const binary = Array(12).fill(0);

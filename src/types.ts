@@ -31,6 +31,10 @@ export interface PcProperties {
 export type PcInit = Partial<{
   pcnum: PcNum;
   chroma: PcChroma;
-  intervals: IntervalName[];
+  note: NoteName;
   notes: NoteName[];
+  interval: IntervalName;
+  intervals: IntervalName[];
 }>;
+
+export type PcSet = PcChroma | PcNum | NoteName[] | IntervalName[];
