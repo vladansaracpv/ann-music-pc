@@ -4,18 +4,28 @@ import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-not
 
 import { PC } from './properties';
 import { EmptyPc } from './theory';
-import { PcChroma, PcNum, PcProperties, PcSet } from './types';
+import { PcChroma, PcNum, PcProperties, PcSet, PcInit } from './types';
 
 const { compact, range, rotate, toBinary } = BaseArray;
 const { both } = BaseBoolean;
 const { curry } = BaseFunctional;
 const { inSegment, eq } = BaseRelations;
-const { isNumber, isObject, isUndefinedOrNull } = BaseTypings;
+const { isNumber, isObject, isArray, isUndefinedOrNull } = BaseTypings;
+const { isName: isNoteName } = NOTE.Validators;
+const { isIntervalName } = INTERVAL.Validators;
 
 export const Validators = {
   isPcNum: (set: any): set is PcNum => isNumber(set) && inSegment(0, 4095, set),
   isPcChroma: (set: any): set is PcChroma => /^[01]{12}$/.test(set),
   isPcSet: (set: any): set is PcProperties => isObject(set) && Validators.isPcChroma(set.chroma),
+  isNoteArray: (notes: NoteName[]) => {
+    const [first, second] = notes;
+    return both(isNoteName(first), isNoteName(second));
+  },
+  isIntervalArray: (intervals: IntervalName[]) => {
+    const [first, second] = intervals;
+    return both(isIntervalName(first), isIntervalName(second));
+  },
 };
 
 export const Methods = {
@@ -25,8 +35,8 @@ export const Methods = {
    * @return {PcChroma}
    */
   normalize(chroma: PcChroma): PcChroma {
-    const first = chroma.indexOf('1');
-    return chroma.slice(first, 12) + chroma.slice(0, first);
+    const tonicPosition = chroma.indexOf('1');
+    return chroma.slice(tonicPosition, 12) + chroma.slice(0, tonicPosition);
   },
 
   /**
@@ -40,7 +50,7 @@ export const Methods = {
    */
   chromaList(len?: number): PcChroma[] {
     const all: PcChroma[] = range(2048, 4095).map(toBinary);
-    return len === undefined ? all.slice() : all.filter(chroma => PC(chroma).length === len);
+    return len === undefined ? all.slice() : all.filter(chroma => PC({ chroma }).length === len);
   },
 
   /**
@@ -51,7 +61,7 @@ export const Methods = {
    * @param {boolean} [normalize] - Use only strings with leading '1'
    * @return {Array<string>} modes array
    */
-  modes(set: PcSet, normalized = true): PcChroma[] {
+  modes(set: PcInit, normalized = true): PcChroma[] {
     const pcs = PC(set);
     const binary = pcs.chroma.split('');
 
@@ -75,7 +85,7 @@ export const Methods = {
    * @example
    * Pcset.isEqual(["c2", "d3"], ["c5", "d2"]) // => true
    */
-  isEqual(one: PcSet, other: PcSet) {
+  isEqual(one: PcInit, other: PcInit) {
     return eq(PC(one).pcnum, PC(other).pcnum);
   },
 
@@ -94,7 +104,7 @@ export const Methods = {
    * inCMajor(["C"])  // => true
    * inCMajor(["A#"]) // => false
    */
-  isSubsetOf: curry((set: PcSet, notes: PcSet) => {
+  isSubsetOf: curry((set: PcInit, notes: PcInit) => {
     const s = PC(set).pcnum;
     const o = PC(notes).pcnum;
 
@@ -114,7 +124,7 @@ export const Methods = {
    * extendsCMajor(["e6", "a", "c4", "g2"]) // => true
    * extendsCMajor(["c6", "e4", "g3"]) // => false
    */
-  isSupersetOf: curry((set: PcSet, notes: PcSet) => {
+  isSupersetOf: curry((set: PcInit, notes: PcInit) => {
     const s = PC(set).pcnum;
     const o = PC(notes).pcnum;
 
@@ -185,34 +195,38 @@ export const Chroma = {
     Number(num)
       .toString(2)
       .padStart(12, '0'),
-  fromArray: (set: NoteName[] | IntervalName[]): PcChroma => {
+  fromNotes: (set: NoteName[]): PcChroma => {
     if (set.length === 0) {
       return EmptyPc.chroma;
     }
 
     const isNote = NOTE.Validators.isName;
+    let pitch: NoNote | NoteProps | IntervalProps | null;
+
+    const binary = Array(12).fill(0);
+
+    for (let i = 0; i < set.length; i++) {
+      pitch = Note({ name: set[i] }) as NoteProps;
+
+      if (pitch.valid) {
+        binary[pitch.chroma] = 1;
+      }
+    }
+    return binary.join('');
+  },
+  fromIntervals: (set: IntervalName[]): PcChroma => {
+    if (set.length === 0) {
+      return EmptyPc.chroma;
+    }
+
     const isIvl = INTERVAL.Validators.isIntervalName;
     let pitch: NoNote | NoteProps | IntervalProps | null;
 
     const binary = Array(12).fill(0);
 
     for (let i = 0; i < set.length; i++) {
-      // Is it Note?
-      if (isNote(set[i])) {
-        pitch = Note({ name: set[i] }) as NoteProps;
-      }
+      pitch = Interval({ name: set[i] }) as IntervalProps;
 
-      // Is it Interval?
-      if (isIvl(set[i])) {
-        pitch = Interval({ name: set[i] }) as IntervalProps;
-      }
-
-      // Is it neither Note or Interval?
-      if (!pitch || !pitch.valid) {
-        return EmptyPc.chroma;
-      }
-
-      // Is it Note or Interval?
       if (pitch.valid) {
         binary[pitch.chroma] = 1;
       }

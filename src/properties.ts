@@ -1,54 +1,53 @@
 import { BaseRelations, BaseTypings } from 'ann-music-base';
+import { IntervalName, INTERVAL } from 'ann-music-interval';
+import { NoteName, NOTE } from 'ann-music-note';
 
 import { Chroma, Methods, Validators } from './methods';
 import { EmptyPc } from './theory';
-import { PcChroma, PcNum, PcSet } from './types';
+import { PcChroma, PcNum, PcSet, PcInit, PcProperties } from './types';
 
 const { eq } = BaseRelations;
 const { isArray } = BaseTypings;
 
-export function PC(src: PcSet) {
-  const { isPcChroma, isPcNum, isPcSet } = Validators;
-  const { fromNum, fromArray, toNum, toIntervals } = Chroma;
+export function PC({ pcnum, chroma, intervals, notes }: PcInit = {}): PcProperties {
+  const { isPcChroma, isPcNum, isPcSet, isNoteArray, isIntervalArray } = Validators;
+  const { fromNum, fromNotes, fromIntervals, toNum, toIntervals } = Chroma;
   const { normalize } = Methods;
 
-  const chroma: PcChroma = isPcChroma(src)
-    ? src
-    : isPcNum(src)
-    ? fromNum(src)
-    : isArray(src)
-    ? fromArray(src)
-    : isPcSet(src)
-    ? src.chroma
-    : EmptyPc.chroma;
+  function PcBuild(chroma: PcChroma): PcProperties {
+    const pcnum: PcNum = toNum(chroma);
+    const normalized = normalize(chroma);
+    const intervals = toIntervals(normalized);
+    const length = chroma.split('').filter(c => c === '1').length;
+    const empty = eq(0, length);
 
-  const pcnum: PcNum = toNum(chroma);
-  const normalized = normalize(chroma);
-  const intervals = toIntervals(normalized);
-  const length = chroma.split('').filter(c => c === '1').length;
-  const empty = eq(0, length);
-
-  function isEqualTo(other: PcSet) {
-    return Methods.isEqual(chroma, other);
+    return {
+      pcnum,
+      chroma,
+      normalized,
+      intervals,
+      length,
+      empty,
+    };
   }
 
-  function isIn(other: PcSet) {
-    return Methods.isSubsetOf(other, this.chroma);
+  function fromPcNum(num: PcNum): PcProperties {
+    const chroma = fromNum(num);
+    return PcBuild(chroma);
   }
 
-  function contains(other: PcSet) {
-    return Methods.isSupersetOf(other, this.chroma);
+  function fromTwoNotes(notes: NoteName[]): PcProperties {
+    const chroma = fromNotes(notes);
+    return PcBuild(chroma);
   }
 
-  return {
-    pcnum,
-    chroma,
-    normalized,
-    intervals,
-    length,
-    empty,
-    // isEqualTo,
-    // isIn,
-    // contains,
-  };
+  function fromTwoIntervals(intervals: IntervalName[]): PcProperties {
+    const chroma = fromIntervals(intervals);
+    return PcBuild(chroma);
+  }
+
+  if (isPcChroma(chroma)) return PcBuild(chroma);
+  if (isPcNum(pcnum)) return fromPcNum(pcnum);
+  if (isNoteArray(notes)) return fromTwoNotes(notes);
+  if (isIntervalArray(intervals)) return fromTwoIntervals(intervals);
 }

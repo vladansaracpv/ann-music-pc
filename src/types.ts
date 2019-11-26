@@ -24,8 +24,15 @@ export interface PcProperties {
   readonly chroma: PcChroma;
   readonly normalized: PcChroma;
   readonly intervals: IntervalName[];
-  readonly length?: number;
+  readonly length: number;
   readonly empty: boolean;
 }
 
-export type PcSet = PcProperties | PcChroma | PcNum | NoteName[] | IntervalName[];
+export type PcInit = Partial<{
+  pcnum: PcNum;
+  chroma: PcChroma;
+  intervals: IntervalName[];
+  notes: NoteName[];
+}>;
+
+export type PcSet = PcChroma | PcNum | NoteName[] | IntervalName[];
