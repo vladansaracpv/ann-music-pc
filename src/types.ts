@@ -34,5 +34,3 @@ export type PcInit = Partial<{
   intervals: IntervalName[];
   notes: NoteName[];
 }>;
-
-export type PcSet = PcChroma | PcNum | NoteName[] | IntervalName[];

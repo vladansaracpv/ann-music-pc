@@ -1,13 +1,15 @@
-import { BaseRelations, BaseTypings } from 'ann-music-base';
-import { IntervalName, INTERVAL } from 'ann-music-interval';
-import { NoteName, NOTE } from 'ann-music-note';
+import { BaseErrors, BaseRelations } from 'ann-music-base';
+import { IntervalName } from 'ann-music-interval';
+import { NoteName } from 'ann-music-note';
 
 import { Chroma, Methods, Validators } from './methods';
 import { EmptyPc } from './theory';
-import { PcChroma, PcNum, PcSet, PcInit, PcProperties } from './types';
+import { PcChroma, PcInit, PcNum, PcProperties } from './types';
 
 const { eq } = BaseRelations;
-const { isArray } = BaseTypings;
+const { CustomError } = BaseErrors;
+
+const PcError = CustomError('Interval');
 
 export function PC({ pcnum, chroma, intervals, notes }: PcInit = {}): PcProperties {
   const { isPcChroma, isPcNum, isPcSet, isNoteArray, isIntervalArray } = Validators;
@@ -50,4 +52,7 @@ export function PC({ pcnum, chroma, intervals, notes }: PcInit = {}): PcProperti
   if (isPcNum(pcnum)) return fromPcNum(pcnum);
   if (isNoteArray(notes)) return fromTwoNotes(notes);
   if (isIntervalArray(intervals)) return fromTwoIntervals(intervals);
+
+  return PcError('InvalidIvlConstructor', { pcnum, chroma, intervals, notes }, EmptyPc) as PcProperties;
+
 }

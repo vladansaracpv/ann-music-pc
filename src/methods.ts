@@ -4,13 +4,13 @@ import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-not
 
 import { PC } from './properties';
 import { EmptyPc } from './theory';
-import { PcChroma, PcNum, PcProperties, PcSet, PcInit } from './types';
+import { PcChroma, PcInit, PcNum, PcProperties } from './types';
 
 const { compact, range, rotate, toBinary } = BaseArray;
 const { both } = BaseBoolean;
 const { curry } = BaseFunctional;
 const { inSegment, eq } = BaseRelations;
-const { isNumber, isObject, isArray, isUndefinedOrNull } = BaseTypings;
+const { isNumber, isObject, isUndefinedOrNull } = BaseTypings;
 const { isName: isNoteName } = NOTE.Validators;
 const { isIntervalName } = INTERVAL.Validators;
 
