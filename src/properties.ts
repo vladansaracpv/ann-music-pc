@@ -54,5 +54,4 @@ export function PC({ pcnum, chroma, intervals, notes }: PcInit = {}): PcProperti
   if (isIntervalArray(intervals)) return fromTwoIntervals(intervals);
 
   return PcError('InvalidIvlConstructor', { pcnum, chroma, intervals, notes }, EmptyPc) as PcProperties;
-
 }
