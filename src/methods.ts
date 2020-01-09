@@ -1,4 +1,4 @@
-import { BaseArray, BaseBoolean, BaseFunctional, BaseRelations, BaseTypings } from 'ann-music-base';
+import { BaseArray, BaseBoolean, BaseRelations, BaseTypings } from 'ann-music-base';
 import { Interval, INTERVAL, IntervalName, IntervalProps } from 'ann-music-interval';
 import { Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-note';
 
@@ -8,7 +8,6 @@ import { PcChroma, PcNum, PcProperties, PcInit } from './types';
 
 const { compact, range, rotate, toBinary } = BaseArray;
 const { both } = BaseBoolean;
-const { curry } = BaseFunctional;
 const { inSegment, eq } = BaseRelations;
 const { isNumber, isObject, isUndefinedOrNull } = BaseTypings;
 const { isName: isNoteName } = NOTE.Validators;
@@ -19,8 +18,6 @@ export const Validators = {
   isPcChroma: (set: any): set is PcChroma => /^[01]{12}$/.test(set),
   isPcSet: (set: any): set is PcProperties => isObject(set) && Validators.isPcChroma(set.chroma),
   isNoteArray: (notes: NoteName[]) => {
-    console.log('HOH');
-
     return notes && notes.reduce((acc, value) => acc && isNoteName(value), true);
   },
   isIntervalArray: (intervals: IntervalName[]) => {
@@ -106,12 +103,12 @@ export const Methods = {
    * inCMajor(["C"])  // => true
    * inCMajor(["A#"]) // => false
    */
-  isSubsetOf: curry((set: PcInit, notes: PcInit) => {
+  isSubsetOf: (set: PcInit) => (notes: PcInit) => {
     const s = Pc(set).pcnum;
     const o = Pc(notes).pcnum;
 
     return s !== o && (o & s) === o;
-  }),
+  },
 
   /**
    * Create a function that test if a collection of notes is a
@@ -126,12 +123,12 @@ export const Methods = {
    * extendsCMajor(["e6", "a", "c4", "g2"]) // => true
    * extendsCMajor(["c6", "e4", "g3"]) // => false
    */
-  isSupersetOf: curry((set: PcInit, notes: PcInit) => {
+  isSupersetOf: (set: PcInit) => (notes: PcInit) => {
     const s = Pc(set).pcnum;
     const o = Pc(notes).pcnum;
 
     return s !== o && (o | s) === o;
-  }),
+  },
 
   /**
    * Transpose a note by an interval. The note can be a pitch class.
