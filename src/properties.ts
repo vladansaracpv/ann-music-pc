@@ -36,20 +36,11 @@ export function Pc({ pcnum, chroma, note, notes, interval, intervals }: PcInit =
     };
   }
 
-  const fromPcNum = compose(
-    PcBuild,
-    fromNum,
-  );
+  const fromPcNum = compose(PcBuild, fromNum);
 
-  const fromNoteList = compose(
-    PcBuild,
-    fromNotes,
-  );
+  const fromNoteList = compose(PcBuild, fromNotes);
 
-  const fromIntervalList = compose(
-    PcBuild,
-    fromIntervals,
-  );
+  const fromIntervalList = compose(PcBuild, fromIntervals);
 
   if (chroma && isPcChroma(chroma)) return PcBuild(chroma);
   if (pcnum && isPcNum(pcnum)) return fromPcNum(pcnum);
