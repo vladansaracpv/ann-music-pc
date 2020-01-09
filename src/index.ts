@@ -5,7 +5,7 @@ export * from './types';
 
 export * from './properties';
 
-export const PitchClass = {
+export const PC = {
   ...Theory,
   ...Methods,
 };

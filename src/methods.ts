@@ -1,10 +1,10 @@
 import { BaseArray, BaseBoolean, BaseFunctional, BaseRelations, BaseTypings } from 'ann-music-base';
 import { Interval, INTERVAL, IntervalName, IntervalProps } from 'ann-music-interval';
-import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-note';
+import { Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-note';
 
-import { PC } from './properties';
+import { Pc } from './properties';
 import { EmptyPc } from './theory';
-import { PcChroma, PcNum, PcProperties, PcSet, PcInit } from './types';
+import { PcChroma, PcNum, PcProperties, PcInit } from './types';
 
 const { compact, range, rotate, toBinary } = BaseArray;
 const { both } = BaseBoolean;
@@ -15,14 +15,16 @@ const { isName: isNoteName } = NOTE.Validators;
 const { isIntervalName } = INTERVAL.Validators;
 
 export const Validators = {
-  isPcNum: (set: any): set is PcNum => isNumber(set) && inSegment(0, 4095, set),
+  isPcNum: (set: any): set is PcNum => set && isNumber(set) && inSegment(0, 4095, set),
   isPcChroma: (set: any): set is PcChroma => /^[01]{12}$/.test(set),
   isPcSet: (set: any): set is PcProperties => isObject(set) && Validators.isPcChroma(set.chroma),
   isNoteArray: (notes: NoteName[]) => {
-    return notes.reduce((acc, value) => acc && isNoteName(value), true);
+    console.log('HOH');
+
+    return notes && notes.reduce((acc, value) => acc && isNoteName(value), true);
   },
   isIntervalArray: (intervals: IntervalName[]) => {
-    return intervals.reduce((acc, value) => acc && isIntervalName(value), true);
+    return intervals && intervals.reduce((acc, value) => acc && isIntervalName(value), true);
   },
   isNoteName,
   isIntervalName,
@@ -50,19 +52,19 @@ export const Methods = {
    */
   chromaList(len?: number): PcChroma[] {
     const all: PcChroma[] = range(2048, 4095).map(toBinary);
-    return len === undefined ? all.slice() : all.filter(chroma => PC({ chroma }).length === len);
+    return len === undefined ? all.slice() : all.filter(chroma => Pc({ chroma }).length === len);
   },
 
   /**
    * Produce the rotations
    * of the chroma discarding the ones that starts with "0" (normalize=true)
    *
-   * @param {PcSet} set - the list of notes or pitchChr of the set
+   * @param {PcInit} set - the list of notes or pitchChr of the set
    * @param {boolean} [normalize] - Use only strings with leading '1'
    * @return {Array<string>} modes array
    */
   modes(set: PcInit, normalized = true): PcChroma[] {
-    const pcs = PC(set);
+    const pcs = Pc(set);
     const binary = pcs.chroma.split('');
 
     return compact(
@@ -78,15 +80,15 @@ export const Methods = {
   /**
    * Test if two pitch class sets are identical
    *
-   * @param {Array<PcSet>} one
-   * @param {Array<PcSet>} other
+   * @param {Array<PcInit>} one
+   * @param {Array<PcInit>} other
    * @return {boolean} true if they are equal
    *
    * @example
    * Pcset.isEqual(["c2", "d3"], ["c5", "d2"]) // => true
    */
   isEqual(one: PcInit, other: PcInit) {
-    return eq(PC(one).pcnum, PC(other).pcnum);
+    return eq(Pc(one).pcnum, Pc(other).pcnum);
   },
 
   /**
@@ -95,8 +97,8 @@ export const Methods = {
    *
    * The function is curryfied.
    *
-   * @param {PcSet} set - the superset to test against (chroma or list of notes)
-   * @param {PcSet} notes - the subset to test (chroma or list of notes)
+   * @param {PcInit} set - the superset to test against (chroma or list of notes)
+   * @param {PcInit} notes - the subset to test (chroma or list of notes)
    * @return {boolean}
    *
    * @example
@@ -105,8 +107,8 @@ export const Methods = {
    * inCMajor(["A#"]) // => false
    */
   isSubsetOf: curry((set: PcInit, notes: PcInit) => {
-    const s = PC(set).pcnum;
-    const o = PC(notes).pcnum;
+    const s = Pc(set).pcnum;
+    const o = Pc(notes).pcnum;
 
     return s !== o && (o & s) === o;
   }),
@@ -115,8 +117,8 @@ export const Methods = {
    * Create a function that test if a collection of notes is a
    * superset of a given set (it contains all notes and at least one more)
    *
-   * @param {PcSet} set - the subset to test against (chroma or list of notes)
-   * @param {PcSet} notes - the subset to test (chroma or list of notes)
+   * @param {PcInit} set - the subset to test against (chroma or list of notes)
+   * @param {PcInit} notes - the subset to test (chroma or list of notes)
    * @return {boolean}
    *
    * @example
@@ -125,8 +127,8 @@ export const Methods = {
    * extendsCMajor(["c6", "e4", "g3"]) // => false
    */
   isSupersetOf: curry((set: PcInit, notes: PcInit) => {
-    const s = PC(set).pcnum;
-    const o = PC(notes).pcnum;
+    const s = Pc(set).pcnum;
+    const o = Pc(notes).pcnum;
 
     return s !== o && (o | s) === o;
   }),
@@ -186,9 +188,7 @@ export const Chroma = {
       if (chroma.charAt(i) === '1') length++;
     }
 
-    const empty = eq(0, length);
-
-    return { pcnum, chroma, normalized, intervals, length, empty };
+    return { pcnum, chroma, normalized, intervals, length };
   },
 
   fromNum: (num: PcNum): PcChroma =>
@@ -200,12 +200,10 @@ export const Chroma = {
       return EmptyPc.chroma;
     }
 
-    let pitch: NoNote | NoteProps | IntervalProps | null;
-
     const binary = Array(12).fill(0);
 
     for (let i = 0; i < set.length; i++) {
-      pitch = Note({ name: set[i] }) as NoteProps;
+      const pitch = Note({ name: set[i] }) as NoteProps;
 
       if (pitch.valid) {
         binary[pitch.chroma] = 1;
@@ -218,12 +216,10 @@ export const Chroma = {
       return EmptyPc.chroma;
     }
 
-    let pitch: NoNote | NoteProps | IntervalProps | null;
-
     const binary = Array(12).fill(0);
 
     for (let i = 0; i < set.length; i++) {
-      pitch = Interval({ name: set[i] }) as IntervalProps;
+      const pitch = Interval({ name: set[i] }) as IntervalProps;
 
       if (pitch.valid) {
         binary[pitch.chroma] = 1;
